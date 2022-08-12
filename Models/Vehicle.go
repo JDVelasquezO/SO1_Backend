@@ -1,8 +1,9 @@
 package Models
 
-type Employee struct {
-	ID     string  `json:"id,omitempty" bson:"_id,omitempty"`
-	Name   string  `json:"name"`
-	Salary float64 `json:"salary"`
-	Age    int     `json:"age"`
+type Vehicle struct {
+	ID     string `json:"id,omitempty" bson:"_id,omitempty"`
+	Model  string `json:"model"`
+	Mark   string `json:"mark"`
+	Color  string `json:"color"`
+	Series string `json:"series"`
 }
