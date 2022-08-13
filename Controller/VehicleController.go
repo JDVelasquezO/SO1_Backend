@@ -26,8 +26,8 @@ func GetVehicles(c *fiber.Ctx) error {
 }
 
 func PostVehicles(c *fiber.Ctx) error {
+	// Keep Vehicles in DB
 	collection := instance.Mg.Db.Collection("vehicles")
-
 	vehicle := new(Models.Vehicle)
 
 	if err := c.BodyParser(vehicle); err != nil {
@@ -48,6 +48,12 @@ func PostVehicles(c *fiber.Ctx) error {
 
 	createdVehicle := &Models.Vehicle{}
 	err = createdRecord.Decode(createdVehicle)
+	if err != nil {
+		return err
+	}
+
+	// Keep Date and Time
+	err = PostRecord(*c)
 	if err != nil {
 		return err
 	}
@@ -97,10 +103,7 @@ func PutVehicles(c *fiber.Ctx) error {
 }
 
 func DelVehicles(c *fiber.Ctx) error {
-	vehicleId, err := primitive.ObjectIDFromHex(c.Params("id"))
-	if err != nil {
-		return c.SendStatus(400)
-	}
+	vehicleId := c.Params("id")
 
 	query := bson.D{
 		{
