@@ -8,12 +8,22 @@ import (
 	"time"
 )
 
-func PostRecord(c fiber.Ctx) error {
+func PostRecord(c fiber.Ctx, nameFunc string) error {
 	collectionRecord := instance.Mg.Db.Collection("record")
 
 	record := new(Models.Record)
 	record.ID = ""
-	record.Func = "Register"
+	switch nameFunc {
+	case "register":
+		record.Func = "Register"
+		break
+	case "update":
+		record.Func = "Update"
+		break
+	case "delete":
+		record.Func = "Detele"
+		break
+	}
 	currentTime := time.Now()
 	record.Time = currentTime.Format("2006-01-02 15:04:05")
 

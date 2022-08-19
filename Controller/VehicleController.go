@@ -5,7 +5,6 @@ import (
 	"backPractica1_SO1/instance"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -53,7 +52,7 @@ func PostVehicles(c *fiber.Ctx) error {
 	}
 
 	// Keep Date and Time
-	err = PostRecord(*c)
+	err = PostRecord(*c, "register")
 	if err != nil {
 		return err
 	}
@@ -64,32 +63,27 @@ func PostVehicles(c *fiber.Ctx) error {
 func PutVehicles(c *fiber.Ctx) error {
 	idVehicle := c.Params("id")
 
-	vehicleID, err := primitive.ObjectIDFromHex(idVehicle)
-	if err != nil {
-		return c.SendStatus(400)
-	}
-
 	vehicle := new(Models.Vehicle)
 
 	if err := c.BodyParser(vehicle); err != nil {
 		return c.Status(400).SendString(err.Error())
 	}
 
-	query := bson.D{{Key: "_id", Value: vehicleID}}
+	query := bson.D{{Key: "_id", Value: idVehicle}}
 	update := bson.D{
 		{
 			Key: "$set",
 			Value: bson.D{
-				{Key: "id", Value: "vehicle.ID"},
-				{Key: "model", Value: "vehicle.Model"},
-				{Key: "series", Value: "vehicle.Series"},
-				{Key: "mark", Value: "vehicle.Mark"},
-				{Key: "color", Value: "vehicle.Color"},
+				{Key: "_id", Value: vehicle.ID},
+				{Key: "model", Value: vehicle.Model},
+				{Key: "series", Value: vehicle.Series},
+				{Key: "mark", Value: vehicle.Mark},
+				{Key: "color", Value: vehicle.Color},
 			},
 		},
 	}
 
-	err = instance.Mg.Db.Collection("vehicles").FindOneAndUpdate(c.Context(),
+	err := instance.Mg.Db.Collection("vehicles").FindOneAndUpdate(c.Context(),
 		query, update).Err()
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -97,8 +91,14 @@ func PutVehicles(c *fiber.Ctx) error {
 		}
 		return c.SendStatus(500)
 	}
-
 	vehicle.ID = idVehicle
+
+	// Keep Date and Time
+	err = PostRecord(*c, "update")
+	if err != nil {
+		return err
+	}
+
 	return c.Status(200).JSON(vehicle)
 }
 
@@ -119,6 +119,12 @@ func DelVehicles(c *fiber.Ctx) error {
 
 	if result.DeletedCount < 1 {
 		return c.SendStatus(404)
+	}
+
+	// Keep Date and Time
+	err = PostRecord(*c, "delete")
+	if err != nil {
+		return err
 	}
 
 	return c.Status(200).JSON("record deleted")
