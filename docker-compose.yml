@@ -1,0 +1,40 @@
+# docker-compose up [--build]
+version: '3'
+
+services:
+  database:
+    image: mongo
+    container_name: mongo-container
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=DB
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - '27017:27017'
+
+  backend:
+    image: jdveloper/so1practica1backend
+    container_name: backend_container
+    environment:
+      - DB_PORT=database
+    ports:
+      - '8000:8000'
+    restart: always
+    depends_on:
+      - database
+    links:
+      - database
+
+  frontend:
+    image: jdveloper/so1practica1frontend
+    container_name: frontend_container
+    ports:
+      - '3000:3000'
+    restart: always
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
+    external: false
